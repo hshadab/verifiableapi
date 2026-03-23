@@ -38,7 +38,7 @@ function isUnsatLike(result: string): boolean {
 export function printBanner() {
   console.log();
   console.log(`${BOLD}${C}  ╔══════════════════════════════════════════════╗${RESET}`);
-  console.log(`${BOLD}${C}  ║       VERIFIED FORAGE — Demo Pipeline        ║${RESET}`);
+  console.log(`${BOLD}${C}  ║       VERIFIABLE MCP — Demo Pipeline        ║${RESET}`);
   console.log(`${BOLD}${C}  ║  Forage discovery  ×  ICME Preflight verify  ║${RESET}`);
   console.log(`${BOLD}${C}  ╚══════════════════════════════════════════════╝${RESET}`);
   console.log();

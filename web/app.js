@@ -221,7 +221,7 @@ async function startDemo() {
     // Mark as checking
     toolCard.classList.add("checking");
     setAnnotation(
-      `Verifying ${tool.displayName}… checking claims against policy with 3 independent solvers.`,
+      `Verifying ${tool.displayName}… extracting claims and checking against formal policy constraints.`,
       "verify"
     );
 

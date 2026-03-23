@@ -1,5 +1,5 @@
 /**
- * Verified Forage — main demo runner.
+ * Verifiable MCP — main demo runner.
  *
  * Flow:
  *   1. Agent announces its task + capability requirements

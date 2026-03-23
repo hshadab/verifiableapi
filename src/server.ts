@@ -153,5 +153,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n  Verified Forage UI → http://localhost:${PORT}\n`);
+  console.log(`\n  Verifiable MCP UI → http://localhost:${PORT}\n`);
 });

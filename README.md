@@ -1,10 +1,10 @@
-# Verified Forage
+# Verifiable MCP
 
 **What if your AI agent could prove — mathematically — that a tool does what it claims before installing it?**
 
 AI agents are starting to pick their own tools. Using the Model Context Protocol (MCP), an agent can search open registries, find a tool that looks right, and install it — all without a human in the loop. The problem is that any tool can say anything in its description. There's no verification. The agent just trusts the listing.
 
-This project adds a verification gate between discovery and installation. The agent finds candidate tools through Forage, then each tool's claims are formally checked by ICME Preflight before anything gets installed.
+This project adds a verification gate between discovery and installation. The agent finds candidate tools through Forage, then each tool's claims are formally verified by ICME Preflight before anything gets installed.
 
 ## How it works
 
@@ -12,27 +12,30 @@ This project adds a verification gate between discovery and installation. The ag
 
 A buyer agent defines its requirements in plain language — for example, "I need a project management tool that supports task assignment, labels, OAuth 2.0 authentication, creating new items, and project scoping."
 
-**2. ICME Preflight compiles the requirements into a machine-checkable policy**
+**2. Requirements are compiled into formal logic**
 
-The natural-language requirements are sent to ICME Preflight's `makeRules` endpoint, which compiles them into formal logic constraints. This happens once. The result is a reusable policy ID.
+The natural-language requirements are sent to ICME Preflight's `makeRules` endpoint. Under the hood, this uses AWS Automated Reasoning (ARc) — the same neurosymbolic framework behind Amazon Bedrock Guardrails — to translate plain English into SMT-LIB, a mathematically precise logic representation. This happens once. The result is a reusable policy ID.
 
 **3. Forage discovers candidate tools**
 
 Forage searches MCP registries (Smithery, MCP Registry, npm) and returns a list of tools that match the agent's search query. Each tool comes with a description published by the seller.
 
-**4. ICME Preflight verifies each tool's claims**
+**4. Each tool's claims are formally verified**
 
-This is the core step. Each tool's published description is submitted to ICME Preflight's `checkIt` endpoint along with the compiled policy. ICME runs the claims through three independent verification engines:
+This is the core step. Each tool's published description is submitted to ICME Preflight's `checkIt` endpoint along with the compiled policy. The verification pipeline works in two stages:
 
-- An **LLM solver** that interprets the natural-language claims
-- An **abstraction-refinement engine** that applies formal reasoning
-- A **Z3 constraint solver** that checks satisfiability
+- An **LLM extracts structured facts** from the tool's natural-language description (e.g., "auth method = OAuth 2.0", "supports labels = true")
+- A **Z3 constraint solver** checks whether those extracted facts satisfy every requirement in the formal policy
 
-All three must agree. If a tool satisfies every constraint, ICME issues a **cryptographic proof of compliance** — a tamper-proof receipt that the tool meets the buyer's requirements. If any constraint fails, the tool is rejected with a clear explanation of what it failed on.
+The result is **SAT** (all constraints satisfied) or **UNSAT** (at least one constraint fails) — not a confidence score, a mathematical proof.
 
-**5. The agent installs only verified tools**
+**5. ICME wraps the result in a zero-knowledge proof**
 
-Tools that passed get installed with their proof attached. Tools that didn't pass are rejected. No trust-on-first-use. No guessing.
+This is what ICME adds on top of AWS ARc. Each verification result is wrapped in a cryptographic zero-knowledge proof using ICME's JOLT-Atlas zkVM. The proof is tamper-proof and independently verifiable — any third party can confirm the guardrail ran correctly, on the policy specified, without trusting ICME or any central authority.
+
+**6. The agent installs only verified tools**
+
+Tools that passed get installed with their cryptographic proof attached. Tools that didn't pass are rejected with a clear explanation of which constraint failed. No trust-on-first-use. No guessing.
 
 ## What the demo shows
 
@@ -40,13 +43,13 @@ The demo walks through this pipeline with five MCP tools:
 
 | Tool | Source | Verdict | Why |
 |------|--------|---------|-----|
-| Linear MCP Server | Smithery | **SAT** | Meets all 5 requirements, proof issued |
-| Jira MCP Server | Smithery | **SAT** | Meets all 5 requirements, proof issued |
-| Asana MCP Server | MCP Registry | **SAT** | Meets all 5 requirements, proof issued |
-| TaskMaster Pro | npm | **UNSAT** | Claims OAuth 2.0 in description but actually uses API keys — caught |
-| ProjectFlow AI | npm | **UNSAT** | Claims full feature set but missing labels and project scoping — caught |
+| Linear MCP Server | Smithery | **SAT** | Meets all 5 requirements, cryptographic proof issued |
+| Jira MCP Server | Smithery | **SAT** | Meets all 5 requirements, cryptographic proof issued |
+| Asana MCP Server | MCP Registry | **SAT** | Meets all 5 requirements, cryptographic proof issued |
+| TaskMaster Pro | npm | **UNSAT** | States API key auth, fails the OAuth 2.0 requirement |
+| ProjectFlow AI | npm | **UNSAT** | Missing labels and project scoping — caught and rejected |
 
-The three mainstream tools from reputable registries pass. The two deceptive tools (honeypots) get caught and rejected. The verification system distinguishes honest descriptions from inflated ones without any human review.
+Three mainstream tools from reputable registries pass verification. Two tools that don't meet the policy constraints are caught and rejected. No human review required.
 
 ## Running the demo
 
@@ -73,22 +76,25 @@ The web UI is a three-column layout — buyer agent requirements on the left, di
 ## Architecture
 
 ```
-Agent requirements
+Agent requirements (plain English)
     |
     v
-ICME Preflight makeRules  -->  Compiled policy (reusable)
+ICME makeRules (AWS ARc: English → SMT-LIB formal logic)
     |
     v
-Forage search  -->  Candidate MCP tools from registries
+Compiled policy (reusable policy ID)
     |
     v
-ICME Preflight checkIt  -->  3 solvers reach consensus
+Forage search → Candidate MCP tools from registries
+    |
+    v
+ICME checkIt (LLM extracts facts → Z3 solver checks constraints)
     |                        |
     v                        v
    SAT + ZK proof          UNSAT + failure explanation
     |
     v
-forage_install (with proof)
+forage_install (with cryptographic receipt)
 ```
 
 ## Project structure
@@ -122,8 +128,8 @@ Mock mode (`npm run demo:mock`) works without an API key.
 
 ## Why this matters
 
-MCP registries are growing fast. Agents are gaining the ability to install tools autonomously. The descriptions in those registries are self-attested — anyone can publish anything. Without a verification layer, an agent has no way to distinguish a tool that actually meets its requirements from one that just claims to.
+MCP registries are growing fast. Agents are gaining the ability to install tools autonomously. The descriptions in those registries are self-attested — anyone can publish anything. Without a verification layer, an agent has no way to distinguish a tool that meets its requirements from one that just claims to.
 
-ICME Preflight provides that verification layer. It turns natural-language requirements into formal constraints, checks tool claims against those constraints using multiple independent solvers, and issues cryptographic proofs when tools pass. The result is a trust boundary between discovery and installation that doesn't depend on reviews, download counts, or reputation — just verifiable proof of capability match.
+ICME Preflight provides that layer. AWS Automated Reasoning translates requirements into formal logic and checks tool claims against them with mathematical precision. ICME adds zero-knowledge proofs so every verification result is cryptographically verifiable by any third party. The result is a trust boundary between discovery and installation that doesn't depend on reviews, download counts, or reputation — just verifiable proof of capability match.
 
-Forage handles the discovery. ICME Preflight handles the truth.
+Forage handles the discovery. AWS ARc handles the formal logic. ICME handles the cryptographic trust.

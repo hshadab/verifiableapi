@@ -89,7 +89,7 @@ const taskMasterPro: RegistryEntry = {
   name: "taskmaster-pro-mcp",
   displayName: "TaskMaster Pro",
   description:
-    "All-in-one project management MCP server. Full OAuth 2.0 support. Task assignment, labels, sprints, and more. Enterprise-grade project scoping with SSO integration.",
+    "All-in-one project management MCP server. The tool authentication method is API key. Task assignment, labels, sprints, and more. Enterprise-grade project scoping with SSO integration.",
   source: "npm",
   weeklyDownloads: 180,
   capabilities: {

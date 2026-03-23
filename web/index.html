@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verified Forage — Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ─── Header ───────────────────────────────── -->
+    <header>
+      <div class="header-left">
+        <span class="logo-text">Verified Forage</span>
+        <span class="header-sep">×</span>
+        <span class="header-sub">ICME Preflight</span>
+      </div>
+      <button id="btn-start" onclick="startDemo()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        Run Verification
+      </button>
+    </header>
+
+    <!-- ─── Annotation banner ──────────────────────── -->
+    <div class="annotation-banner" id="annotation">
+      <div class="annotation-step" id="ann-text">Click "Run Verification" to start the demo.</div>
+    </div>
+
+    <!-- ─── Main 3-column layout ─────────────────── -->
+    <main>
+
+      <!-- ─── Col 1: Agent + Policy ──────────────── -->
+      <section class="col col-agent">
+        <h2 class="section-label">BUYER AGENT</h2>
+
+        <div class="card">
+          <div class="card-label">TASK</div>
+          <p class="card-body">"I need a project management tool to track tasks for my team."</p>
+        </div>
+
+        <div class="card">
+          <div class="card-label">POLICY REQUIREMENTS</div>
+          <ul class="req-list">
+            <li><span class="req-icon">⬡</span> Task assignment</li>
+            <li><span class="req-icon">⬡</span> Labels / tags</li>
+            <li><span class="req-icon">⬡</span> OAuth 2.0 auth</li>
+            <li><span class="req-icon">⬡</span> Create new items</li>
+            <li><span class="req-icon">⬡</span> Project / team scoping</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-label">COMPILED POLICY</div>
+          <div class="policy-id" id="policy-id">58ecb147-7f62-…</div>
+          <div class="policy-meta">7 rules · SMT-LIB2 · 3 solvers</div>
+        </div>
+
+      </section>
+
+      <!-- ─── Col 2: Discovery ───────────────────── -->
+      <section class="col col-discovery">
+        <h2 class="section-label">DISCOVERY <span class="label-dim">forage_search</span></h2>
+
+        <div id="tool-list" class="tool-list">
+          <!-- filled by JS -->
+        </div>
+      </section>
+
+      <!-- ─── Col 3: Verification Results ────────── -->
+      <section class="col col-results">
+        <h2 class="section-label">VERIFICATION <span class="label-dim">checkIt</span></h2>
+
+        <div id="results-list" class="results-list">
+          <div class="empty-state">Results will appear here…</div>
+        </div>
+
+        <!-- summary bar at bottom -->
+        <div class="summary-bar" id="summary-bar" style="display:none;">
+          <div class="summary-cell sat"><span id="s-sat">0</span> SAT</div>
+          <div class="summary-cell uncertain"><span id="s-unc">0</span> UNCERTAIN</div>
+          <div class="summary-cell unsat"><span id="s-unsat">0</span> UNSAT</div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ─── Footer ───────────────────────────────── -->
+    <footer>
+      <span>Forage discovery</span>
+      <span class="footer-sep">→</span>
+      <span>ICME Preflight verify</span>
+      <span class="footer-sep">→</span>
+      <span>Cryptographic proof receipt</span>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
